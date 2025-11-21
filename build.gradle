@@ -1,0 +1,81 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '3.5.7'
+	id 'io.spring.dependency-management' version '1.1.7'
+    id 'org.openapi.generator' version '7.2.0'
+}
+
+group = 'com.apimodern'
+version = '0.0.1-SNAPSHOT'
+description = 'Demo project for Spring Boot'
+
+openApiGenerate {
+    generatorName = "spring"
+    inputSpec = "$rootDir/src/main/resources/api/openapi.yaml".toString()
+    outputDir = "$buildDir/generated".toString()
+    apiPackage = "com.packt.modern.api"
+    modelPackage = "com.packt.modern.api.model"
+    invokerPackage = "com.packt.modern.api"
+    configOptions = [
+            library: "spring-boot",
+            dateLibrary: "java8",
+            hideGenerationTimestamp: "true",
+            serializableModel: "true",
+            useTags: "true",
+            useGzipFeature: "true",
+            hateoas: "false",
+            withXml: "true",
+            useJakartaEe: "true",
+            importMappings: "ResourceSupport=org.springframework.hateoas.RepresentationModel,Link=org.springframework.hateoas.Link"
+    ]
+    typeMappings = [
+            URI: "java.net.URI"
+    ]
+}
+
+compileJava.dependsOn 'openApiGenerate'
+processResources.dependsOn 'openApiGenerate'
+sourceSets.main.java.srcDir new File(buildDir, 'generated/src/main/java')
+sourceSets.main.resources.srcDir new File(buildDir, 'generated/src/main/resources')
+
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(17)
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+    //OPENAPI START
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml'
+    implementation 'org.springframework.boot:spring-boot-starter-hateoas'
+    implementation 'org.openapitools:jackson-databind-nullable:0.2.6'
+    // Fix: provide JAXB (Jakarta XML Bind) for generated @Xml* annotations
+    implementation 'jakarta.xml.bind:jakarta.xml.bind-api:3.0.1'
+    // Fix: OpenAPI / Swagger annotations and models used by generated code
+    implementation 'io.swagger.core.v3:swagger-annotations:2.2.11'
+    implementation 'io.swagger.core.v3:swagger-models:2.2.11'
+    //OPEN END
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
+
+springBoot {
+    mainClass = 'com.apimodern.ApiDesignModern.ApiDesignModernApplication'
+}
+
+tasks.named('processResources') {
+    duplicatesStrategy = 'exclude'
+}
+
+
